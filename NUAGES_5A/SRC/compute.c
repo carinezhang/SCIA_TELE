@@ -110,15 +110,32 @@ int search_center(int* centers, struct pixel p)
   return index;
 }
 
+int* find_neighbours(guchar *pucImaRes, int x, int y, int NbLine, int NbCol)
+{
+  int* res = malloc(SIZE_VECTOR * sizeof(int));
+  for (int i = 0; i < SIZE_VECTOR; i++)
+    res[i] = -1;
+  res[0] = *(pucImaRes + x * NbCol + y)
+  if (x > 0)
+    res[1] = *(pucImaRes + (x - 1) * NbCol + y)
+  if (x < NbLine - 1)
+    res[2] = *(pucImaRes + (x + 1) * NbCol + y)
+  if (y < 0)
+    res[3]
+ 
+}
+
 /*
 struct pixel* init_pixels(guchar *pucImaRes, guint NbLine, guint NbCol)
 {
   struct pixel* pixels = malloc(NbLine * NbCol * sizeof(struct pixel));
-  iNbPixelsTotal=NbCol*NbLine;
-  for(iNumPix=0;
-      iNumPix<iNbPixelsTotal*iNbChannels;
-      iNumPix=iNumPix+iNbChannels){
-    
+
+  for (int i = 0; i < NbCol; i++)
+  {
+    for (int j = 0; j < NbLine; j++)
+    {
+      
+    }
   }
 }
 */
