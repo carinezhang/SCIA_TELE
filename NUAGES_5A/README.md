@@ -5,15 +5,15 @@ STEPS:
   -> Calculer le vecteur Vp correspondant à la couleur du pixel et de ses voisins directs (qui le touche)
   -> Trouver la classe dont le centre de gravite est le plus proche de son centre de gravite
   -> l'assigner a cette classe
-- A la fin de l'iter, calculer les nouveaux centre de gravite en prenant la moy des centres de gravite de tout les pixels appartenant a la classes
+- A la fin de l'iter, calculer les nouveaux centre de gravite en prenant la mediane des centres de gravite de tout les pixels appartenant a la classes
 - Recommencer tant que les centres des classes bougent
 - Mettre les pixels appartenant a la classe la plus haute (celles des nuages) en blanc et les autres en noirs
 
-STRUCTS:
-struct classe {
-  int centre;
-}
+/!\ POUR LES PIXELS AU BORD, mettre -1 en valeur des voisins et ne pas les prendre
+en compte lors du calcul de la mediane
 
+
+STRUCTS:
 struct pixel {
   struct* classe cl;
   int *v;
