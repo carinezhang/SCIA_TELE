@@ -60,6 +60,17 @@ void ComputeImage(guchar *pucImaOrig,
   
 }
 
+/**
+ * Init centers
+ *
+ * Divide 0 - 255 (spectre) into NB_CLASS parts, find the center of each part,
+ * then create NB_CLASS vectors of SIZE_VECTOR and assign the center
+ * to each component of the vector of the n class. 
+ *
+ * Input:
+ *
+ * Output : vector of int 
+ */
 int* init_centers() 
 {
   int *centers = malloc(NB_CLASS * SIZE_VECTOR * sizeof(int));
@@ -73,13 +84,6 @@ int* init_centers()
     }
   }
   return centers;
-}
-
-int abs_val(int value)
-{
-  if (value < 0)
-    return -1 * value;
-  return value;
 }
 
 int dist(int* a, int* b)
@@ -110,23 +114,29 @@ int search_center(int* centers, struct pixel p)
   return index;
 }
 
+int cmpfunc (const void * a, const void * b) {
+     return ( *(int*)a > *(int*)b );
+}
+
 int* find_neighbours(guchar *pucImaRes, int x, int y, int NbLine, int NbCol)
 {
   int* res = malloc(SIZE_VECTOR * sizeof(int));
   for (int i = 0; i < SIZE_VECTOR; i++)
     res[i] = -1;
-  res[0] = *(pucImaRes + x * NbCol + y)
+  res[0] = *(pucImaRes + x * NbCol + y);
   if (x > 0)
-    res[1] = *(pucImaRes + (x - 1) * NbCol + y)
+    res[1] = *(pucImaRes + (x - 1) * NbCol + y);
   if (x < NbLine - 1)
-    res[2] = *(pucImaRes + (x + 1) * NbCol + y)
+    res[2] = *(pucImaRes + (x + 1) * NbCol + y);
   if (y < 0)
-    res[3]
- 
+    res[3] = *(pucImaRes + x * NbCol + (y - 1));
+  if (y > NbCol - 1)
+    res[4] = *(pucImaRes + x * NbCol + (y + 1));
+  qsort(res, SIZE_VECTOR, sizeof(int), cmpfunc);
+  return res;
 }
 
-/*
-struct pixel* init_pixels(guchar *pucImaRes, guint NbLine, guint NbCol)
+struct pixel* init_pixels(guchar *pucImaRes, guint NbLine, guint NbCol, int* centers)
 {
   struct pixel* pixels = malloc(NbLine * NbCol * sizeof(struct pixel));
 
@@ -134,8 +144,22 @@ struct pixel* init_pixels(guchar *pucImaRes, guint NbLine, guint NbCol)
   {
     for (int j = 0; j < NbLine; j++)
     {
-      
+      struct pixel p = pixels[i * NbCol + j];
+      p.cl = search_center(centers, p);
+      p.v = find_neighbours(pucImaRes, i, j, NbLine, NbCol);
     }
   }
+  return pixels;
+}
+
+void update_class(int* centers, struct pixels* pixels, int NbTotalPix)
+{
+  for (int i = 0; i < NbTotalPix; i++)
+    pixels[i].cl = search_center(centers, pixels[i]);
+}
+
+/*
+int evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol)
+{
 }
 */
