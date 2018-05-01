@@ -14,11 +14,11 @@ DES FONCTIONS
 
   Entrees: 
           --->le tableau des valeurs des pixels de l'image d'origine
-	      (les lignes sont mises les unes à la suite des autres)
+	      (les lignes sont mises les unes ï¿½ la suite des autres)
 	  --->le nombre de lignes de l'image,
 	  --->le nombre de colonnes de l'image,
           --->le tableau des valeurs des pixels de l'image resultat
-	      (les lignes sont mises les unes à la suite des autres)
+	      (les lignes sont mises les unes ï¿½ la suite des autres)
 
 
   Sortie:
@@ -158,8 +158,31 @@ void update_class(int* centers, struct pixels* pixels, int NbTotalPix)
     pixels[i].cl = search_center(centers, pixels[i]);
 }
 
-/*
-int evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol)
+
+int evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, int NbLine)
 {
+  int *classPixels = malloc(sizeof(int) * NbCol * NbLine);
+  int nbVec = 0;
+  for (int i = 0; i < NbCol; i++) {
+    for (int j = 0; j < NbLine; j++) {
+      if (pixels[i * NbCol + j].cl == center) {
+        classPixels[nbVec] = pixels[i * NbCol + j].v[SIZE_VECTOR/2]
+        nbVec++;
+      }
+    }
+  }
+  qsort(classPixels, nbVec, sizeof(int), cmpfunc);
+  // calcule du nouveau centre c
+
+  if (nbVec != 0) {
+    int c = classPixels[nbVec/2];
+
+    for (int i = 0; i < SIZE_VECTOR; i++)
+      centers[center * SIZE_VECTOR + i] = c; 
+  } 
+
+  free(classPixels);
 }
-*/
+
+//Division par zero
+// free
