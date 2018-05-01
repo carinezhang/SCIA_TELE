@@ -141,7 +141,7 @@ int search_center(int* centers, struct pixel p)
 }
 
 int cmpfunc (const void * a, const void * b) {
-     return ( *(int*)a > *(int*)b );
+     return ( *(int*)a < *(int*)b );
 }
 
 int* find_neighbours(guchar *pucImaRes, int x, int y, int NbLine, int NbCol)
