@@ -38,6 +38,7 @@ void ComputeImage(guchar *pucImaOrig,
   guchar ucMeanPix;
 
   printf("Segmentation de l'image.... A vous!\n");
+  printf("CALCUL CENTRES");
   
   iNbPixelsTotal=NbCol*NbLine;
   for(iNumPix=0;
@@ -56,8 +57,23 @@ void ComputeImage(guchar *pucImaOrig,
       *(pucImaRes+iNumPix+iNumChannel)= ucMeanPix;
   }
 
+  printf("CALCUL CENTRES");
+
   int* centers = init_centers();
-  
+  for (int i = 0; i < NB_CLASS; i++)
+    printf(" %d ", centers[i * SIZE_VECTOR]);
+  printf("\n");
+  struct pixel* pixels = init_pixels(pucImaRes, NbLine,NbCol, centers);
+  for (int i = 0; i < iNbPixelsTotal; i++)
+  {
+      struct pixel p = pixels[i];
+      if (p.v == NULL)
+      {
+        printf("i: %d\n", i);
+        printf("Class: %d\n", p.cl);
+        printf("Vector: %d %d %d %d %d\n", p.v[0], p.v[1], p.v[2], p.v[3], p.v[4]);
+      }
+  }
 }
 
 /**
@@ -76,6 +92,9 @@ int* init_centers()
   int *centers = malloc(NB_CLASS * SIZE_VECTOR * sizeof(int));
   int upper = 256 / NB_CLASS;
   int start = upper / 2;
+
+  int a = 1;
+
   for (int i = 0; i < NB_CLASS; i++)
   {
     for (int j = 0; j < SIZE_VECTOR; j++)
@@ -86,6 +105,13 @@ int* init_centers()
   return centers;
 }
 
+/*
+ * Compute the square distance between 2 vectors.
+ *
+ * Input: 2 vectors of SIZE_VECTOR length
+ *
+ * Output: the square distance
+ */
 int dist(int* a, int* b)
 {
   int res = 0;
@@ -133,6 +159,8 @@ int* find_neighbours(guchar *pucImaRes, int x, int y, int NbLine, int NbCol)
   if (y > NbCol - 1)
     res[4] = *(pucImaRes + x * NbCol + (y + 1));
   qsort(res, SIZE_VECTOR, sizeof(int), cmpfunc);
+  if (res == NULL)
+    printf("IT IS NOT WORKING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   return res;
 }
 
@@ -144,29 +172,30 @@ struct pixel* init_pixels(guchar *pucImaRes, guint NbLine, guint NbCol, int* cen
   {
     for (int j = 0; j < NbLine; j++)
     {
-      struct pixel p = pixels[i * NbCol + j];
-      p.cl = search_center(centers, p);
-      p.v = find_neighbours(pucImaRes, i, j, NbLine, NbCol);
+      struct pixel *p = &pixels[i * NbCol + j];
+      p->v = find_neighbours(pucImaRes, i, j, NbLine, NbCol);
+      p->cl = search_center(centers, *p);
+      int a = 1;
     }
   }
   return pixels;
 }
 
-void update_class(int* centers, struct pixels* pixels, int NbTotalPix)
+void update_class(int* centers, struct pixel* pixels, int NbTotalPix)
 {
   for (int i = 0; i < NbTotalPix; i++)
     pixels[i].cl = search_center(centers, pixels[i]);
 }
 
 
-int evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, int NbLine)
+void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, int NbLine)
 {
   int *classPixels = malloc(sizeof(int) * NbCol * NbLine);
   int nbVec = 0;
   for (int i = 0; i < NbCol; i++) {
     for (int j = 0; j < NbLine; j++) {
       if (pixels[i * NbCol + j].cl == center) {
-        classPixels[nbVec] = pixels[i * NbCol + j].v[SIZE_VECTOR/2]
+        classPixels[nbVec] = pixels[i * NbCol + j].v[SIZE_VECTOR/2];
         nbVec++;
       }
     }

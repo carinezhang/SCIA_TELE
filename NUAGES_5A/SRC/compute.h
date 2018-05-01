@@ -23,3 +23,4 @@ int* init_centers();
 int dist(int* a, int* b);
 int search_center(int* centers, struct pixel p);
 int* find_neighbours(guchar *pucImaRes, int x, int y, int NbLine, int NbCol);
+struct pixel* init_pixels(guchar *pucImaRes, guint NbLine, guint NbCol, int* centers);
