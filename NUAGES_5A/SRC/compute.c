@@ -57,23 +57,20 @@ void ComputeImage(guchar *pucImaOrig,
       *(pucImaRes+iNumPix+iNumChannel)= ucMeanPix;
   }
 
-  printf("CALCUL CENTRES");
-
   int* centers = init_centers();
-  for (int i = 0; i < NB_CLASS; i++)
-    printf(" %d ", centers[i * SIZE_VECTOR]);
-  printf("\n");
+
   struct pixel* pixels = init_pixels(pucImaRes, NbLine,NbCol, centers);
   for (int i = 0; i < iNbPixelsTotal; i++)
   {
       struct pixel p = pixels[i];
-      if (p.v == NULL)
+      if (p.v != NULL)
       {
         printf("i: %d\n", i);
         printf("Class: %d\n", p.cl);
         printf("Vector: %d %d %d %d %d\n", p.v[0], p.v[1], p.v[2], p.v[3], p.v[4]);
       }
   }
+
 }
 
 /**
@@ -149,18 +146,16 @@ int* find_neighbours(guchar *pucImaRes, int x, int y, int NbLine, int NbCol)
   int* res = malloc(SIZE_VECTOR * sizeof(int));
   for (int i = 0; i < SIZE_VECTOR; i++)
     res[i] = -1;
-  res[0] = *(pucImaRes + x * NbCol + y);
+  res[0] = *(pucImaRes + x * NbCol * 3 + y * 3);
   if (x > 0)
     res[1] = *(pucImaRes + (x - 1) * NbCol + y);
   if (x < NbLine - 1)
     res[2] = *(pucImaRes + (x + 1) * NbCol + y);
-  if (y < 0)
+  if (y > 0)
     res[3] = *(pucImaRes + x * NbCol + (y - 1));
-  if (y > NbCol - 1)
+  if (y < NbCol - 1)
     res[4] = *(pucImaRes + x * NbCol + (y + 1));
   qsort(res, SIZE_VECTOR, sizeof(int), cmpfunc);
-  if (res == NULL)
-    printf("IT IS NOT WORKING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   return res;
 }
 
@@ -168,14 +163,15 @@ struct pixel* init_pixels(guchar *pucImaRes, guint NbLine, guint NbCol, int* cen
 {
   struct pixel* pixels = malloc(NbLine * NbCol * sizeof(struct pixel));
 
-  for (int i = 0; i < NbCol; i++)
+  int i = 0;
+  int j = 0;
+  for (i = 0; i < NbCol; i++)
   {
-    for (int j = 0; j < NbLine; j++)
+    for (j = 0; j < NbLine; j++)
     {
-      struct pixel *p = &pixels[i * NbCol + j];
+      struct pixel *p = &pixels[i * NbLine + j];
       p->v = find_neighbours(pucImaRes, i, j, NbLine, NbCol);
       p->cl = search_center(centers, *p);
-      int a = 1;
     }
   }
   return pixels;
