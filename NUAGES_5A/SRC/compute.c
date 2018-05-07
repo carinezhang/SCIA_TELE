@@ -58,21 +58,12 @@ void ComputeImage(guchar *pucImaOrig,
 
   int* centers = init_centers();
  
-  guchar *toto = malloc(9 * 3 * sizeof(guchar));
-  for (int i = 0; i < 27; i++)
-  {
-    toto[i] = i / 3;
-  }
-  int *res = find_neighbours(toto, 2, 1, 3, 3);
-  for (int i = 0; i < 5; i++)
-    printf(" %d ", res[i]);
-
-  /*
   struct pixel* pixels = init_pixels(pucImaRes, NbLine,NbCol, centers);
+  /*
   for (int i = 0; i < iNbPixelsTotal; i++)
   {
       struct pixel p = pixels[i];
-      if (p.v[0] > 200) 
+      if (p.cl > 4) 
       {
         printf("i: %d\n", i);
         printf("Class: %d\n", p.cl);
@@ -195,6 +186,37 @@ void update_class(int* centers, struct pixel* pixels, int NbTotalPix)
 
 void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, int NbLine)
 {
+  int *sum = malloc(sizeof(int) * SIZE_VECTOR);
+  for (int i = 0; i < SIZE_VECTOR; i++)
+    sum[i] = 0;
+  int n = 0;
+  for (int i = 0; i < NbLine * NbCol; i++)
+  {
+    if (pixels[i].cl != center)
+      continue;
+    for (int j = 0; j < SIZE_VECTOR; j++)
+      sum[j] += pixels[i].v[j];
+    n++;
+  }
+  for (int i = 0; i < size_vector; i++)
+    sum[i] = sum[i] / n;
+  qsort(sum, SIZE_VECTOR, sizeof(int), cmpfunc);
+  for (int i = 0; i < SIZE_VECTOR; i++)
+    centers[center * SIZE_VECTOR + i] = sum[i]
+
+  // If it's the cloud vector assign the mean to each components
+  if (center == NB_CLASS - 1)
+  {
+    int nb = 0;
+    for (int i = 0; i < SIZE_VECTOR; i++)
+      if (centers[center * SIZE_VECTOR + i] != -1)
+        nb++;
+    int mean = nb / 2;
+    for (int i = 0; i < SIZE_VECTOR; i++)
+      centers[center * SIZE_VECTOR + i] = mean;
+
+  }
+
   int *classPixels = malloc(sizeof(int) * NbCol * NbLine);
   int nbVec = 0;
   for (int i = 0; i < NbCol; i++) {
