@@ -38,7 +38,6 @@ void ComputeImage(guchar *pucImaOrig,
   guchar ucMeanPix;
 
   printf("Segmentation de l'image.... A vous!\n");
-  printf("CALCUL CENTRES");
   
   iNbPixelsTotal=NbCol*NbLine;
   for(iNumPix=0;
@@ -58,19 +57,29 @@ void ComputeImage(guchar *pucImaOrig,
   }
 
   int* centers = init_centers();
+ 
+  guchar *toto = malloc(9 * 3 * sizeof(guchar));
+  for (int i = 0; i < 27; i++)
+  {
+    toto[i] = i / 3;
+  }
+  int *res = find_neighbours(toto, 2, 1, 3, 3);
+  for (int i = 0; i < 5; i++)
+    printf(" %d ", res[i]);
 
+  /*
   struct pixel* pixels = init_pixels(pucImaRes, NbLine,NbCol, centers);
   for (int i = 0; i < iNbPixelsTotal; i++)
   {
       struct pixel p = pixels[i];
-      if (p.v != NULL)
+      if (p.v[0] > 200) 
       {
         printf("i: %d\n", i);
         printf("Class: %d\n", p.cl);
         printf("Vector: %d %d %d %d %d\n", p.v[0], p.v[1], p.v[2], p.v[3], p.v[4]);
       }
   }
-
+  */
 }
 
 /**
@@ -127,7 +136,7 @@ int search_center(int* centers, struct pixel p)
   int dist_min = dist(centers, p.v);
   for (int i = 1; i < NB_CLASS; i++)
   {
-    int dist_t = dist(centers + i * SIZE_VECTOR, p.v);
+    int dist_t = dist(centers + (i * SIZE_VECTOR), p.v);
     if (dist_t < dist_min)
     {
       index = i;
@@ -146,15 +155,15 @@ int* find_neighbours(guchar *pucImaRes, int x, int y, int NbLine, int NbCol)
   int* res = malloc(SIZE_VECTOR * sizeof(int));
   for (int i = 0; i < SIZE_VECTOR; i++)
     res[i] = -1;
-  res[0] = *(pucImaRes + x * NbCol * 3 + y * 3);
+  res[0] = *(pucImaRes + x * NbLine * 3 + y * 3);
   if (x > 0)
-    res[1] = *(pucImaRes + (x - 1) * NbCol + y);
+    res[1] = *(pucImaRes + (x - 1) * NbLine * 3 + y * 3);
   if (x < NbLine - 1)
-    res[2] = *(pucImaRes + (x + 1) * NbCol + y);
+    res[2] = *(pucImaRes + (x + 1) * NbLine * 3 + y * 3);
   if (y > 0)
-    res[3] = *(pucImaRes + x * NbCol + (y - 1));
+    res[3] = *(pucImaRes + x * NbLine * 3 + (y - 1) * 3);
   if (y < NbCol - 1)
-    res[4] = *(pucImaRes + x * NbCol + (y + 1));
+    res[4] = *(pucImaRes + x * NbLine * 3 + (y + 1) * 3);
   qsort(res, SIZE_VECTOR, sizeof(int), cmpfunc);
   return res;
 }
