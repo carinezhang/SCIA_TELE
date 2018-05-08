@@ -59,18 +59,45 @@ void ComputeImage(guchar *pucImaOrig,
   int* centers = init_centers();
  
   struct pixel* pixels = init_pixels(pucImaRes, NbLine,NbCol, centers);
-  /*
-  for (int i = 0; i < iNbPixelsTotal; i++)
+  for (int i = 0; i < NB_CLASS; i++)
+    printf(" %d ", centers[i* SIZE_VECTOR]);
+  printf("\n");
+  // LOOP
+  main_loop(centers, pixels, NbLine, NbCol);
+  draw_clouds(pucImaRes, pixels, NbLine * NbCol);
+}
+
+void array_copy(int* src, int* dest)
+{
+  memcpy(dest, src, NB_CLASS * SIZE_VECTOR * sizeof(int));
+}
+
+int check_array(int* a, int* b)
+{
+  for (int i = 0; i < SIZE_VECTOR * NB_CLASS; i++)
+    if (a[i] != b[i])
+      return 1;
+  return 0;
+}
+
+void main_loop(int* centers, struct pixel* pixels, int NbLine, int NbCol)
+{
+  int REPEAT = 500;
+  int *old_centers = malloc(SIZE_VECTOR * NB_CLASS * sizeof(int));
+  for (int r = 0; r < REPEAT; r++)
   {
-      struct pixel p = pixels[i];
-      if (p.cl > 4) 
-      {
-        printf("i: %d\n", i);
-        printf("Class: %d\n", p.cl);
-        printf("Vector: %d %d %d %d %d\n", p.v[0], p.v[1], p.v[2], p.v[3], p.v[4]);
-      }
+    array_copy(centers, old_centers);
+    for (int i = NB_CLASS - 1; i >= 0; i--)
+    {
+      update_class(centers, pixels, NbLine * NbCol);
+      evaluate_center(i, centers, pixels, NbCol, NbLine);
+      for (int i = 0; i < NB_CLASS; i++)
+        printf(" %d ", centers[i* SIZE_VECTOR]);
+      printf("\n");
+    }
+    if (check_array(old_centers, centers))
+      break;
   }
-  */
 }
 
 /**
@@ -195,14 +222,15 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
     if (pixels[i].cl != center)
       continue;
     for (int j = 0; j < SIZE_VECTOR; j++)
-      sum[j] += pixels[i].v[j];
+      if (pixels[i].v[j] != -1)
+        sum[j] += pixels[i].v[j];
     n++;
   }
-  for (int i = 0; i < size_vector; i++)
+  for (int i = 0; i < SIZE_VECTOR; i++)
     sum[i] = sum[i] / n;
   qsort(sum, SIZE_VECTOR, sizeof(int), cmpfunc);
   for (int i = 0; i < SIZE_VECTOR; i++)
-    centers[center * SIZE_VECTOR + i] = sum[i]
+    centers[center * SIZE_VECTOR + i] = sum[i];
 
   // If it's the cloud vector assign the mean to each components
   if (center == NB_CLASS - 1)
@@ -211,12 +239,12 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
     for (int i = 0; i < SIZE_VECTOR; i++)
       if (centers[center * SIZE_VECTOR + i] != -1)
         nb++;
-    int mean = nb / 2;
+    int mean = centers[center * SIZE_VECTOR + nb / 2];
     for (int i = 0; i < SIZE_VECTOR; i++)
       centers[center * SIZE_VECTOR + i] = mean;
-
   }
 
+  /*
   int *classPixels = malloc(sizeof(int) * NbCol * NbLine);
   int nbVec = 0;
   for (int i = 0; i < NbCol; i++) {
@@ -238,6 +266,21 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
   } 
 
   free(classPixels);
+  */
+
+}
+
+void draw_clouds(guchar *resIma, struct pixel *pixels, int nbPix)
+{
+  for (int i = 0; i < nbPix; i++)
+  {
+    if (pixels[i].cl == NB_CLASS - 1)
+      for (int j = 0; j < 3; j++)
+        *(resIma + i * 3 + j) = 255;
+    else
+      for (int j = 0; j < 3; j++)
+        *(resIma + i * 3 + j) = 0;
+  }
 }
 
 //Division par zero
