@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 #define LargeurImage 360
 
 #define NB_CLASS 8

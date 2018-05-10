@@ -89,8 +89,9 @@ void main_loop(int* centers, struct pixel* pixels, int NbLine, int NbCol)
     array_copy(centers, old_centers);
     for (int i = NB_CLASS - 1; i >= 0; i--)
     {
-      update_class(centers, pixels, NbLine * NbCol);
       evaluate_center(i, centers, pixels, NbCol, NbLine);
+      printf("update_class\n");
+      update_class(centers, pixels, NbLine * NbCol);
       for (int i = 0; i < NB_CLASS; i++)
         printf(" %d ", centers[i* SIZE_VECTOR]);
       printf("\n");
@@ -116,9 +117,6 @@ int* init_centers()
   int *centers = malloc(NB_CLASS * SIZE_VECTOR * sizeof(int));
   int upper = 256 / NB_CLASS;
   int start = upper / 2;
-
-  int a = 1;
-
   for (int i = 0; i < NB_CLASS; i++)
   {
     for (int j = 0; j < SIZE_VECTOR; j++)
@@ -143,7 +141,7 @@ int dist(int* a, int* b)
   {
     if (a[i] == -1 || b[i] == -1)
       continue;
-    res += (a[i] - b[i])  * (a[i] - b[i]);
+    res += (b[i] - a[i])  * (b[i] - a[i]);
   }
   return res;
 }
@@ -173,30 +171,29 @@ int* find_neighbours(guchar *pucImaRes, int x, int y, int NbLine, int NbCol)
   int* res = malloc(SIZE_VECTOR * sizeof(int));
   for (int i = 0; i < SIZE_VECTOR; i++)
     res[i] = -1;
-  res[0] = *(pucImaRes + x * NbLine * 3 + y * 3);
+  res[0] = *(pucImaRes + x * NbCol * 3 + y * 3);
   if (x > 0)
-    res[1] = *(pucImaRes + (x - 1) * NbLine * 3 + y * 3);
+    res[1] = *(pucImaRes + (x - 1) * NbCol * 3 + y * 3);
   if (x < NbLine - 1)
-    res[2] = *(pucImaRes + (x + 1) * NbLine * 3 + y * 3);
+    res[2] = *(pucImaRes + (x + 1) * NbCol * 3 + y * 3);
   if (y > 0)
-    res[3] = *(pucImaRes + x * NbLine * 3 + (y - 1) * 3);
+    res[3] = *(pucImaRes + x * NbCol * 3 + (y - 1) * 3);
   if (y < NbCol - 1)
-    res[4] = *(pucImaRes + x * NbLine * 3 + (y + 1) * 3);
+    res[4] = *(pucImaRes + x * NbCol * 3 + (y + 1) * 3);
   qsort(res, SIZE_VECTOR, sizeof(int), cmpfunc);
   return res;
 }
 
 struct pixel* init_pixels(guchar *pucImaRes, guint NbLine, guint NbCol, int* centers)
 {
+  guint i = 0;
+  guint j = 0;
   struct pixel* pixels = malloc(NbLine * NbCol * sizeof(struct pixel));
-
-  int i = 0;
-  int j = 0;
-  for (i = 0; i < NbCol; i++)
+  for (i = 0; i < NbLine; i++)
   {
-    for (j = 0; j < NbLine; j++)
+    for (j = 0; j < NbCol; j++)
     {
-      struct pixel *p = &pixels[i * NbLine + j];
+      struct pixel *p = &pixels[i * NbCol + j];
       p->v = find_neighbours(pucImaRes, i, j, NbLine, NbCol);
       p->cl = search_center(centers, *p);
     }
@@ -236,7 +233,6 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
     centers[center * SIZE_VECTOR + i] = sum[i];
 
   // If it's the cloud vector assign the mean to each components
-  /*
   if (center == NB_CLASS - 1)
   {
     int nb = 0;
@@ -247,7 +243,6 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
     for (int i = 0; i < SIZE_VECTOR; i++)
       centers[center * SIZE_VECTOR + i] = mean;
   }
-  */
 }
 
 void draw_clouds(guchar *resIma, struct pixel *pixels, int nbPix)
@@ -255,11 +250,11 @@ void draw_clouds(guchar *resIma, struct pixel *pixels, int nbPix)
   for (int i = 0; i < nbPix; i++)
   {
     if (pixels[i].cl == NB_CLASS - 1)
-      for (int j = 0; j < 3; j++)
-        *(resIma + i * 3 + j) = 255;
-    else
-      for (int j = 0; j < 3; j++)
-        *(resIma + i * 3 + j) = 0;
+    {
+        *(resIma + i * 3) = 255;
+        *(resIma + i * 3 + 1) = 0;
+        *(resIma + i * 3 + 2) = 0;
+    }
   }
 }
 
