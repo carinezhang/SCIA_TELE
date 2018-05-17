@@ -3,9 +3,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <string.h>
+
 #define LargeurImage 360
 
-#define NB_CLASS 8
+#define NB_CLASS 5
 #define SIZE_VECTOR 5
 
 struct pixel {

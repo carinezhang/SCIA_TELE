@@ -83,6 +83,7 @@ int check_array(int* a, int* b)
 void main_loop(int* centers, struct pixel* pixels, int NbLine, int NbCol)
 {
   int REPEAT = 500;
+  static int test = 0;
   int *old_centers = malloc(SIZE_VECTOR * NB_CLASS * sizeof(int));
   for (int r = 0; r < REPEAT; r++)
   {
@@ -97,7 +98,11 @@ void main_loop(int* centers, struct pixel* pixels, int NbLine, int NbCol)
       printf("\n");
     }
     if (check_array(old_centers, centers))
-      break;
+    {
+      if (test == 0)
+        break;
+      test++;
+    }
   }
 }
 
@@ -233,6 +238,7 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
     centers[center * SIZE_VECTOR + i] = sum[i];
 
   // If it's the cloud vector assign the mean to each components
+  /*
   if (center == NB_CLASS - 1)
   {
     int nb = 0;
@@ -243,6 +249,7 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
     for (int i = 0; i < SIZE_VECTOR; i++)
       centers[center * SIZE_VECTOR + i] = mean;
   }
+  */
 }
 
 void draw_clouds(guchar *resIma, struct pixel *pixels, int nbPix)
@@ -250,11 +257,11 @@ void draw_clouds(guchar *resIma, struct pixel *pixels, int nbPix)
   for (int i = 0; i < nbPix; i++)
   {
     if (pixels[i].cl == NB_CLASS - 1)
-    {
-        *(resIma + i * 3) = 255;
-        *(resIma + i * 3 + 1) = 0;
-        *(resIma + i * 3 + 2) = 0;
-    }
+      for (int j = 0; j < 3; j++)
+        *(resIma + i * 3 + j) = 255;
+    else
+      for (int j = 0; j < 3; j++)
+        *(resIma + i * 3 + j) = 0;
   }
 }
 
