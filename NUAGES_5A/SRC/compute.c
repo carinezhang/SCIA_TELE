@@ -37,8 +37,6 @@ void ComputeImage(guchar *pucImaOrig,
   int iNumChannel, iNbChannels=3; /* on travaille sur des images couleurs*/
   guchar ucMeanPix;
 
-  printf("Segmentation de l'image.... A vous!\n");
-  
   iNbPixelsTotal=NbCol*NbLine;
   for(iNumPix=0;
       iNumPix<iNbPixelsTotal*iNbChannels;
@@ -59,9 +57,6 @@ void ComputeImage(guchar *pucImaOrig,
   int* centers = init_centers();
  
   struct pixel* pixels = init_pixels(pucImaRes, NbLine,NbCol, centers);
-  for (int i = 0; i < NB_CLASS; i++)
-    printf(" %d ", centers[i* SIZE_VECTOR]);
-  printf("\n");
   // LOOP
   main_loop(centers, pixels, NbLine, NbCol);
   draw_clouds(pucImaRes, pixels, NbLine * NbCol);
@@ -91,11 +86,7 @@ void main_loop(int* centers, struct pixel* pixels, int NbLine, int NbCol)
     for (int i = NB_CLASS - 1; i >= 0; i--)
     {
       evaluate_center(i, centers, pixels, NbCol, NbLine);
-      printf("update_class\n");
       update_class(centers, pixels, NbLine * NbCol);
-      for (int i = 0; i < NB_CLASS; i++)
-        printf(" %d ", centers[i* SIZE_VECTOR]);
-      printf("\n");
     }
     if (check_array(old_centers, centers))
     {
@@ -238,7 +229,6 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
     centers[center * SIZE_VECTOR + i] = sum[i];
 
   // If it's the cloud vector assign the mean to each components
-  /*
   if (center == NB_CLASS - 1)
   {
     int nb = 0;
@@ -249,7 +239,6 @@ void evaluate_center(int center, int* centers, struct pixel* pixels, int NbCol, 
     for (int i = 0; i < SIZE_VECTOR; i++)
       centers[center * SIZE_VECTOR + i] = mean;
   }
-  */
 }
 
 void draw_clouds(guchar *resIma, struct pixel *pixels, int nbPix)
@@ -264,6 +253,3 @@ void draw_clouds(guchar *resIma, struct pixel *pixels, int nbPix)
         *(resIma + i * 3 + j) = 0;
   }
 }
-
-//Division par zero
-// free

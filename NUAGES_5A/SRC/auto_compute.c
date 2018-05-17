@@ -2,8 +2,13 @@
 #include "compute.h"
 
 
-void print_result(char *filename, guchar *img)
+void print_result(char *filename, guchar *img, int NbTotal)
 {
+  int nb_clouds = 0;
+  for (int i = 0; i < NbTotal; i++)
+    if (*(img + i * 3) == 255)
+      nb_clouds++;
+  printf("File:%s, number of clouds: %d/%d\n", filename, nb_clouds, NbTotal);
 }
 
 
@@ -18,8 +23,8 @@ void process_image(char *filename)
   guchar *pucImaOri = gdk_pixbuf_get_pixels(pixbuf);
   guchar *pucImaRes = gdk_pixbuf_get_pixels(pixbufRes);
   ComputeImage(pucImaOri, NbLine, NbCol, pucImaRes);
-
   // COUNT % pixels
+  print_result(filename, pucImaRes, NbCol * NbLine);
 }
 
 char *update_name(char *filename)
@@ -27,7 +32,7 @@ char *update_name(char *filename)
   char *res = malloc(256 * sizeof(char));
   for (int i = 0; i < 256; i++)
     res[i] = 0;
-  strcat(res, "../EXE/");
+  strcat(res, "./");
   strcat(res, filename);
   return res;
 }
@@ -36,7 +41,7 @@ int process_images()
 {
   DIR *dir;
   struct dirent *ent;
-  if ((dir = opendir("../EXE/")) == NULL)
+  if ((dir = opendir(".")) == NULL)
     return 1;
   while ((ent = readdir(dir)) != NULL)
   {
@@ -48,9 +53,6 @@ int process_images()
     if (strcmp(name + (len - 4), ".bmp") != 0)
       continue;
     char *new_name = update_name(name);
-
-    printf("%s\n", new_name);
-
     process_image(new_name);
   }
   closedir(dir);
@@ -59,37 +61,6 @@ int process_images()
 
 int main(int argc, char **argv)
 {
-  process_images();
-  return 0;
-}
-
-
-void ComputeImage(guchar *pucImaOrig, 
-		  guint NbLine,
-		  guint NbCol, 
-		  guchar *pucImaRes)
-{
-  int iNbPixelsTotal, iNumPix;
-  int iNumChannel, iNbChannels=3; /* on travaille sur des images couleurs*/
-  guchar ucMeanPix;
-
-  printf("Segmentation de l'image.... A vous!\n");
-  
-  iNbPixelsTotal=NbCol*NbLine;
-  for(iNumPix=0;
-      iNumPix<iNbPixelsTotal*iNbChannels;
-      iNumPix=iNumPix+iNbChannels){
-    /*moyenne sur les composantes RVB */
-    ucMeanPix=(unsigned char)
-	((
-	  *(pucImaOrig+iNumPix) +
-	  *(pucImaOrig+iNumPix+1) +
-	  *(pucImaOrig+iNumPix+2))/3);
-    /* sauvegarde du resultat */
-    for(iNumChannel=0;
-	iNumChannel<iNbChannels;
-	iNumChannel++)
-      *(pucImaRes+iNumPix+iNumChannel)= ucMeanPix;
-  }
-
+  int res = process_images();
+  return res;
 }
